@@ -11,7 +11,7 @@ Based on https://openreview.net/forum?id=H1T2hmZAb
 
 import torch
 from torch.nn import Module, Parameter, init
-from torch.nn import Conv2d, Linear, BatchNorm1d, BatchNorm2d
+from torch.nn import Conv1d, Conv2d, Linear, BatchNorm1d, BatchNorm2d
 from torch.nn import ConvTranspose2d
 from .complexFunctions import (
     complex_relu,
@@ -200,6 +200,44 @@ class ComplexConv2d(Module):
             bias,
         )
         self.conv_i = Conv2d(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dilation,
+            groups,
+            bias,
+        )
+
+    def forward(self, input):
+        return apply_complex(self.conv_r, self.conv_i, input)
+
+
+class ComplexConv1d(Module):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size=3,
+        stride=1,
+        padding=0,
+        dilation=1,
+        groups=1,
+        bias=True,
+    ):
+        super(ComplexConv1d, self).__init__()
+        self.conv_r = Conv1d(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dilation,
+            groups,
+            bias,
+        )
+        self.conv_i = Conv1d(
             in_channels,
             out_channels,
             kernel_size,

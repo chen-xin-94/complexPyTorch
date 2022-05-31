@@ -12,7 +12,6 @@ from torch.nn.functional import (
     dropout,
     dropout2d,
     interpolate,
-    tanh,
 )
 import torch
 
@@ -64,7 +63,7 @@ def complex_sigmoid(input):
 
 
 def complex_tanh(input):
-    return tanh(input.real).type(torch.complex64) + 1j * tanh(input.imag).type(
+    return torch.tanh(input.real).type(torch.complex64) + 1j * torch.tanh(input.imag).type(
         torch.complex64
     )
 
