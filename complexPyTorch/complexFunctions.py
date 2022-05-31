@@ -8,6 +8,7 @@
 from torch.nn.functional import (
     relu,
     max_pool2d,
+    max_pool1d,
     avg_pool2d,
     dropout,
     dropout2d,
@@ -18,7 +19,7 @@ import torch
 
 def complex_matmul(A, B):
     """
-        Performs the matrix product between two complex matricess
+    Performs the matrix product between two complex matricess
     """
 
     outp_real = torch.matmul(A.real, B.real) - torch.matmul(A.imag, B.imag)
@@ -63,9 +64,9 @@ def complex_sigmoid(input):
 
 
 def complex_tanh(input):
-    return torch.tanh(input.real).type(torch.complex64) + 1j * torch.tanh(input.imag).type(
-        torch.complex64
-    )
+    return torch.tanh(input.real).type(torch.complex64) + 1j * torch.tanh(
+        input.imag
+    ).type(torch.complex64)
 
 
 def complex_opposite(input):
@@ -99,7 +100,7 @@ def complex_upsample(
     recompute_scale_factor=None,
 ):
     """
-        Performs upsampling by separately interpolating the real and imaginary part and recombining
+    Performs upsampling by separately interpolating the real and imaginary part and recombining
     """
     outp_real = interpolate(
         input.real,
@@ -130,7 +131,7 @@ def complex_upsample2(
     recompute_scale_factor=None,
 ):
     """
-        Performs upsampling by separately interpolating the amplitude and phase part and recombining
+    Performs upsampling by separately interpolating the amplitude and phase part and recombining
     """
     outp_abs = interpolate(
         input.abs(),
@@ -190,6 +191,40 @@ def complex_max_pool2d(
     )
 
 
+def complex_max_pool1d(
+    input,
+    kernel_size,
+    stride=None,
+    padding=0,
+    dilation=1,
+    ceil_mode=False,
+    return_indices=False,  # used in class ComplexMaxPool1d
+):
+    """
+    Perform complex max pooling by selecting on the absolute value on the complex values.
+    """
+    absolute_value, indices = max_pool1d(
+        input.abs(),
+        kernel_size=kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        ceil_mode=ceil_mode,
+        return_indices=True,  # always true here
+    )
+    # performs the selection on the absolute values
+    absolute_value = absolute_value.type(torch.complex64)
+    # retrieve the corresonding phase value using the indices
+    # unfortunately, the derivative for 'angle' is not implemented
+    angle = torch.atan2(input.imag, input.real)
+    # get only the phase values selected by max pool
+    angle = _retrieve_elements_from_indices(angle, indices)
+    return absolute_value * (
+        torch.cos(angle).type(torch.complex64)
+        + 1j * torch.sin(angle).type(torch.complex64)
+    )
+
+
 def complex_dropout(input, p=0.5, training=True):
     # need to have the same dropout mask for real and imaginary part,
     # this not a clean solution!
@@ -207,4 +242,3 @@ def complex_dropout2d(input, p=0.5, training=True):
     mask = dropout2d(mask, p, training) * 1 / (1 - p)
     mask.type(input.dtype)
     return mask * input
-

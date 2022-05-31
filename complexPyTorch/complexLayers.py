@@ -18,6 +18,7 @@ from .complexFunctions import (
     complex_tanh,
     complex_sigmoid,
     complex_max_pool2d,
+    complex_max_pool1d,
     complex_avg_pool2d,
     complex_dropout,
     complex_dropout2d,
@@ -75,6 +76,36 @@ class ComplexMaxPool2d(Module):
 
     def forward(self, input):
         return complex_max_pool2d(
+            input,
+            kernel_size=self.kernel_size,
+            stride=self.stride,
+            padding=self.padding,
+            dilation=self.dilation,
+            ceil_mode=self.ceil_mode,
+            return_indices=self.return_indices,
+        )
+
+
+class ComplexMaxPool1d(Module):
+    def __init__(
+        self,
+        kernel_size,
+        stride=None,
+        padding=0,
+        dilation=1,
+        return_indices=False,
+        ceil_mode=False,
+    ):
+        super(ComplexMaxPool1d, self).__init__()
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+        self.dilation = dilation
+        self.ceil_mode = ceil_mode
+        self.return_indices = return_indices
+
+    def forward(self, input):
+        return complex_max_pool1d(
             input,
             kernel_size=self.kernel_size,
             stride=self.stride,
